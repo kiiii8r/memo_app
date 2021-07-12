@@ -90,7 +90,10 @@
                     <div class="card">
                         <div class="card-header">メモ一覧</div>
                         <div class="card-body">
-                            <p class="card-text">メモ内容</p>
+                            {{-- 各ユーザーのメモ一覧表示 --}}
+                            @foreach($memos as $memo)
+                                <a class="card-text d-block">{{ $memo['content'] }}</a>
+                            @endforeach
                         </div>
                     </div>
                 </div>
