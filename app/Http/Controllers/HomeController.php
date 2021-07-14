@@ -22,6 +22,8 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
+
+    // メモ一覧取得
     public function index()
     {
         // メモを取得
@@ -34,6 +36,7 @@ class HomeController extends Controller
         return view('create', compact('memos'));
     }
 
+    // 新規メモ作成
     public function store(Request $request)
     {
         // $postがpostされた内容を全て取得
@@ -46,6 +49,7 @@ class HomeController extends Controller
         return redirect( route('home') );
     }
 
+    // メモ編集
     public function edit($id)
     {
         // メモを取得
@@ -61,6 +65,7 @@ class HomeController extends Controller
         return view('edit', compact('memos', 'edit_memo'));
     }
 
+    // メモ更新
     public function update(Request $request)
     {
         // $postがpostされた内容を全て取得
@@ -68,6 +73,19 @@ class HomeController extends Controller
 
         // 指定のMemoレコードをアップデートする
         Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]);
+
+        // ホーム画面に戻る
+        return redirect( route('home') );
+    }
+
+    // メモ削除機能
+    public function destroy(Request $request)
+    {
+        // $postがpostされた内容を全て取得
+        $posts = $request->all();
+
+        // 指定のMemoレコードをアップデートする
+        Memo::where('id', $posts['memo_id'])->update(['deleted_at' => date("Y-m-d H:i:s", time())]);
 
         // ホーム画面に戻る
         return redirect( route('home') );
