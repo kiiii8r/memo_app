@@ -41,7 +41,7 @@ class HomeController extends Controller
         return view('create', compact('memos', 'tags'));
     }
 
-    // 新規メモ作成
+    // 新規メモ作成フォーム
     public function store(Request $request)
     {
         // $postがpostされた内容を全て取得
@@ -74,7 +74,7 @@ class HomeController extends Controller
         return redirect( route('home') );
     }
 
-    // メモ編集
+    // メモ編集フォーム
     public function edit($id)
     {
         // メモを取得
@@ -85,9 +85,24 @@ class HomeController extends Controller
             ->get();
 
         // メモを一つだけ取得
-        $edit_memo = Memo::find($id);
+        $edit_memo = Memo::select('memos.*', 'tags.id AS tag_id')
+            ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+            ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->where('memos.user_id', '=', \Auth::id())
+            ->where('memos.id', '=', $id)
+            ->whereNull('memos.deleted_at')
+            ->get();
 
-        return view('edit', compact('memos', 'edit_memo'));
+        // 編集するメモとタグを紐付け
+        $include_tags = [];
+        foreach($edit_memo as $memo){
+            array_push($include_tags, $memo['tag_id']);
+        }
+
+        // タグ一覧を取得
+        $tags = Tag::where('user_id', '=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+
+        return view('edit', compact('memos', 'edit_memo', 'include_tags' ,'tags'));
     }
 
     // メモ更新
