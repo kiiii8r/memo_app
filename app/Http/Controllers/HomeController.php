@@ -41,7 +41,7 @@ class HomeController extends Controller
         return view('create', compact('memos', 'tags'));
     }
 
-    // 新規メモ作成フォーム
+    // 新規メモ作成
     public function store(Request $request)
     {
         // $postがpostされた内容を全て取得
@@ -74,7 +74,7 @@ class HomeController extends Controller
         return redirect( route('home') );
     }
 
-    // メモ編集フォーム
+    // メモ編集
     public function edit($id)
     {
         // メモを取得
