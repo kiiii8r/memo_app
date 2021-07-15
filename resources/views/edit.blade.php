@@ -23,6 +23,7 @@
             <label class="form-check-label" for="{{ $tag['id'] }}">{{ $tag['name'] }}</label>
         </div>
         @endforeach
+        <input type="text" class="form-control w-50 mb-3" name="new_tag" placeholder="新しいタグを入力"/>
         <button type="submit" class="btn btn-primary">更新</button>
     </form>
 </div>
