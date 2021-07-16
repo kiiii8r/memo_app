@@ -40,6 +40,7 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
+        $request->validate(['content' => 'required|max:255']);
 
         // トランザクション開始
         DB::transaction(function() use($posts) {
@@ -97,6 +98,7 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
+        $request->validate(['content' => 'required|max:255']);
 
         // トランザクションスタート
         DB::transaction(function () use($posts){
