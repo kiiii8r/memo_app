@@ -27,24 +27,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // 全てのメソッドが呼ばれる前に先に呼ばれるメソッド
         view()->composer('*', function ($view) {
-            $query_tag = \Request::query('tag');
-            if(!empty($query_tag)) {
-                // タグで絞り込み
-                $memos = Memo::select('memos.*')
-                ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
-                ->where('memo_tags.tag_id', '=', $query_tag)
-                ->where('user_id', '=', \Auth::id())
-                ->whereNull('deleted_at')
-                ->orderBy('updated_at', 'DESC')
-                ->get();
-            }else{
-                // タグがなければ全て取得
-                $memos = Memo::select('memos.*')
-                ->where('user_id', '=', \Auth::id())
-                ->whereNull('deleted_at')
-                ->orderBy('updated_at', 'DESC')
-                ->get();
-            }
+            // Memoモデルよりインスタンス化しメモ取得
+            $memo_model = new Memo();
+            $memos = $memo_model->getMyMemo();
 
             $tags = Tag::where('user_id', '=', \Auth::id())
             ->whereNull('deleted_at')
