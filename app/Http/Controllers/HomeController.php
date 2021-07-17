@@ -29,16 +29,10 @@ class HomeController extends Controller
     // メモ一覧取得
     public function index()
     {
-        // メモを取得
-        $memos = Memo::select('memos.*')
-            ->where('user_id', '=', \Auth::id())
-            ->whereNull('deleted_at')
-            ->orderBy('updated_at', 'DESC')
-            ->get();
 
         $tags = Tag::where('user_id', '=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
 
-        return view('create', compact('memos', 'tags'));
+        return view('create', compact('tags'));
     }
 
     // 新規メモ作成
@@ -46,6 +40,7 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
+        $request->validate(['content' => 'required|max:255']);
 
         // トランザクション開始
         DB::transaction(function() use($posts) {
@@ -71,19 +66,12 @@ class HomeController extends Controller
         // ↑トランザクション範囲↑
 
         // ホーム画面に戻る
-        return redirect( route('home') );
+        return redirect( route('index') );
     }
 
     // メモ編集
     public function edit($id)
     {
-        // メモを取得
-        $memos = Memo::select('memos.*')
-            ->where('user_id', '=', \Auth::id())
-            ->whereNull('deleted_at')
-            ->orderBy('updated_at', 'DESC')
-            ->get();
-
         // メモを一つだけ取得
         $edit_memo = Memo::select('memos.*', 'tags.id AS tag_id')
             ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
@@ -102,7 +90,7 @@ class HomeController extends Controller
         // タグ一覧を取得
         $tags = Tag::where('user_id', '=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
 
-        return view('edit', compact('memos', 'edit_memo', 'include_tags' ,'tags'));
+        return view('edit', compact('edit_memo', 'include_tags' ,'tags'));
     }
 
     // メモ更新
@@ -110,6 +98,7 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
+        $request->validate(['content' => 'required|max:255']);
 
         // トランザクションスタート
         DB::transaction(function () use($posts){
@@ -137,7 +126,7 @@ class HomeController extends Controller
 
 
         // ホーム画面に戻る
-        return redirect( route('home') );
+        return redirect( route('index') );
     }
 
     // メモ削除機能
@@ -150,6 +139,6 @@ class HomeController extends Controller
         Memo::where('id', $posts['memo_id'])->update(['deleted_at' => date("Y-m-d H:i:s", time())]);
 
         // ホーム画面に戻る
-        return redirect( route('home') );
+        return redirect( route('index') );
     }
 }

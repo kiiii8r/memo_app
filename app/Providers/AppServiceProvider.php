@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\Memo;
+use App\Models\Tag;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // 全てのメソッドが呼ばれる前に先に呼ばれるメソッド
+        view()->composer('*', function ($view) {
+            // Memoモデルよりインスタンス化しメモ取得
+            $memo_model = new Memo();
+            $memos = $memo_model->getMyMemo();
+
+            $tags = Tag::where('user_id', '=', \Auth::id())
+            ->whereNull('deleted_at')
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+            $view->with('memos', $memos)->with('tags', $tags);
+        });
     }
 }
