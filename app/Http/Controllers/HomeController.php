@@ -40,12 +40,12 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
-        $request->validate(['content' => 'required|max:255']);
+        $request->validate(['content' => 'required|max:255', 'url' => 'required']);
 
         // トランザクション開始
         DB::transaction(function() use($posts) {
             // メモIDをインサートし取得
-            $memo_id = Memo::insertGetId(['content' => $posts['content'], 'user_id' => \Auth::id()]);
+            $memo_id = Memo::insertGetId(['content' => $posts['content'], 'url' => $posts['url'], 'user_id' => \Auth::id()]);
 
             // 新規タグがすでにtagsテーブルに存在するのかチェック
             $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists();
@@ -81,6 +81,26 @@ class HomeController extends Controller
             ->whereNull('memos.deleted_at')
             ->get();
 
+        // url内容を取得
+        $data = htmlspecialchars($edit_memo[0]['url'], ENT_QUOTES);
+        $youtube = $edit_memo[0]['url'];
+
+        // フレーム確認
+        if (strpos($youtube, "iframe") != true)
+        {
+            // URL確認
+            if (strpos($youtube, "watch") != false)
+            {
+                // コード変換
+                $youtube = substr($youtube, (strpos($youtube, "=")+1));
+            }
+            else
+            {
+                // 短縮URL変換
+                $youtube = substr($youtube, (strpos($youtube, "youtu.be/")+9));
+            }
+        }
+
         // 編集するメモとタグを紐付け
         $include_tags = [];
         foreach($edit_memo as $memo){
@@ -90,7 +110,7 @@ class HomeController extends Controller
         // タグ一覧を取得
         $tags = Tag::where('user_id', '=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
 
-        return view('edit', compact('edit_memo', 'include_tags' ,'tags'));
+        return view('edit', compact('edit_memo', 'include_tags' ,'tags', 'youtube'));
     }
 
     // メモ更新
@@ -98,12 +118,12 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
-        $request->validate(['content' => 'required|max:255']);
+        $request->validate(['content' => 'required|max:255', 'url' => 'required']);
 
         // トランザクションスタート
         DB::transaction(function () use($posts){
             // 指定のMemoレコードをアップデートする
-            Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]);
+            Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content'], 'url' => $posts['url']]);
             // 一旦メモとタグの紐付けを削除
             MemoTag::where('memo_id', '=', $posts['memo_id'])->delete();
             // 再度メモとタグの紐付け

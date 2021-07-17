@@ -20,6 +20,9 @@ crossorigin="anonymous"></script>
     </div>
 
     <form class="card-body my-card-body" action="{{ route('update') }}" method="POST">
+        <div class="mb-3 d-flex justify-content-center">
+            <iframe width="70%" height="250" src="https://www.youtube.com/embed/{{$youtube}}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+           </div>
         @csrf
         <input type="hidden" name="memo_id" value="{{ $edit_memo[0]['id'] }}" />
         <div class="mb-3">
@@ -27,6 +30,12 @@ crossorigin="anonymous"></script>
         </div>
         @error('content')
             <div class="alert alert-danger">メモ内容を入力してください</div>
+        @enderror
+        <div class="mb-3">
+            <input type="text" class="form-control" name="url" placeholder="YoutubeのURLを入力" value="{{ $edit_memo[0]['url'] }}">
+        </div>
+        @error('url')
+            <div class="alert alert-danger">YoutubeのURLを入力してください</div>
         @enderror
         @foreach($tags as $tag)
         <div class="form-check form-check-inline mb-3">
