@@ -66,7 +66,7 @@ class HomeController extends Controller
         // ↑トランザクション範囲↑
 
         // ホーム画面に戻る
-        return redirect( route('home') );
+        return redirect( route('index') );
     }
 
     // メモ編集
@@ -126,7 +126,7 @@ class HomeController extends Controller
 
 
         // ホーム画面に戻る
-        return redirect( route('home') );
+        return redirect( route('index') );
     }
 
     // メモ削除機能
@@ -139,6 +139,6 @@ class HomeController extends Controller
         Memo::where('id', $posts['memo_id'])->update(['deleted_at' => date("Y-m-d H:i:s", time())]);
 
         // ホーム画面に戻る
-        return redirect( route('home') );
+        return redirect( route('index') );
     }
 }
