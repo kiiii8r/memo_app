@@ -85,7 +85,7 @@
                         <div class="card-header">タグ一覧</div>
                         <div class="card-body my-card-body">
                             {{-- 各ユーザーのタグ一覧表示 --}}
-                            <a href="/" class="card-text d-block">すべて表示</a>
+                            <a href="/" class="mb-2 card-text d-block">すべて表示</a>
                             @foreach($tags as $tag)
                             <a href="/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">{{ $tag['name'] }}</a>
                             @endforeach
