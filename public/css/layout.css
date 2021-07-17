@@ -1,0 +1,26 @@
+.my-card-body {
+    height: calc(100vh - (55px + 48px));
+}
+
+.delete {
+    font-size: 14px;
+    padding: 0;
+    border-style: none;
+}
+
+.fix-width {
+    width: 99%;
+}
+
+.ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media screen and (max-width:760px) {
+    .my-card-body {
+        height: auto;
+        max-height: 50vh;
+    }
+}
