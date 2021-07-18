@@ -45,7 +45,7 @@ class HomeController extends Controller
         // トランザクション開始
         DB::transaction(function() use($posts) {
             // メモIDをインサートし取得
-            $memo_id = Memo::insertGetId(['content' => $posts['content'], 'url' => $posts['url'], 'user_id' => \Auth::id()]);
+            $memo_id = Memo::insertGetId(['content' => $posts['content'], 'url' => $posts['url'], 'genre' => $posts['genre'], 'score' => $posts['score'],  'user_id' => \Auth::id()]);
 
             // 新規タグがすでにtagsテーブルに存在するのかチェック
             $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists();
@@ -123,7 +123,7 @@ class HomeController extends Controller
         // トランザクションスタート
         DB::transaction(function () use($posts){
             // 指定のMemoレコードをアップデートする
-            Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content'], 'url' => $posts['url']]);
+            Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content'], 'url' => $posts['url'], 'genre' => $posts['genre'], 'score' => $posts['score']]);
             // 一旦メモとタグの紐付けを削除
             MemoTag::where('memo_id', '=', $posts['memo_id'])->delete();
             // 再度メモとタグの紐付け
