@@ -82,8 +82,19 @@
             <div class="row">
                 <div class="col-sm-12 col-md-2 p-0">
                     <div class="card">
+                        <div class="card-header">ジャンル選択</div>
+                        <div class="pl-10 card-body card-body-genre">
+                            {{-- 各ユーザーのタグ一覧表示 --}}
+                            <select name="genre">
+                                @foreach(config('genre') as $key => $genre)
+                                <option value="{{ $key }}">{{ $genre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card">
                         <div class="card-header">タグ一覧</div>
-                        <div class="card-body my-card-body">
+                        <div class="pl-10 card-body card-body-tags">
                             {{-- 各ユーザーのタグ一覧表示 --}}
                             <a href="/" class="mb-2 card-text d-block">すべて表示</a>
                             @foreach($tags as $tag)
