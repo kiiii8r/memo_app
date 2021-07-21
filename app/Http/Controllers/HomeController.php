@@ -146,7 +146,7 @@ class HomeController extends Controller
 
 
         // ホーム画面に戻る
-        return redirect( route('index') );
+        return redirect('/edit/'. $posts['memo_id']);
     }
 
     // メモ削除機能
@@ -160,5 +160,88 @@ class HomeController extends Controller
 
         // ホーム画面に戻る
         return redirect( route('index') );
+    }
+
+
+    public function search()
+    {
+        $tags = Tag::where('user_id', '!=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+
+        $query_tag = \Request::query('tag');
+        $query = Memo::query()->select('memos.*')
+            ->where('user_id', '!=', \Auth::id())
+            ->whereNull('deleted_at')
+            ->orderBy('updated_at', 'DESC');
+        // もしクエリパラメータtagがあれば
+        if(!empty($query_tag)) {
+            // タグで絞り込み
+            $other_memos = $query
+                ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+                ->where('memo_tags.tag_id', '=', $query_tag)
+                ->get();
+        }else{
+            // タグがなければ全て取得
+            $other_memos = $query
+                ->get();
+        }
+
+        return view('read', compact('other_memos', 'tags'));
+    }
+
+
+    // 他ユーザのメモ一一覧機能
+    public function read($id)
+    {
+        $tags = Tag::where('user_id', '!=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+
+        $query_tag = \Request::query('tag');
+        $query = Memo::query()->select('memos.*')
+            ->where('user_id', '!=', \Auth::id())
+            ->whereNull('deleted_at')
+            ->orderBy('updated_at', 'DESC');
+        // もしクエリパラメータtagがあれば
+        if(!empty($query_tag)) {
+            // タグで絞り込み
+            $other_memos = $query
+                ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+                ->where('memo_tags.tag_id', '=', $query_tag)
+                ->get();
+        }else{
+            // タグがなければ全て取得
+            $other_memos = $query
+                ->get();
+        }
+
+        // メモを一つだけ取得
+        // $other_memo = Memo::select('memos.*', 'tags.id AS tag_id')
+        // ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+        // ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+        // ->where('memos.user_id', '=', \Auth::id())
+        // ->where('memos.id', '=', $id)
+        // ->whereNull('memos.deleted_at')
+        // ->get();
+
+
+        // url内容を取得
+        // $data = htmlspecialchars($other_memos[0]['url'], ENT_QUOTES);
+        // $youtube = $other_memos[0]['url'];
+
+        // // フレーム確認
+        // if (strpos($youtube, "iframe") != true)
+        // {
+        //     // URL確認
+        //     if (strpos($youtube, "watch") != false)
+        //     {
+        //         // コード変換
+        //         $youtube = substr($youtube, (strpos($youtube, "=")+1));
+        //     }
+        //     else
+        //     {
+        //         // 短縮URL変換
+        //         $youtube = substr($youtube, (strpos($youtube, "youtu.be/")+9));
+        //     }
+        // }
+
+        return view('read', compact('other_memos', 'tags'));
     }
 }
