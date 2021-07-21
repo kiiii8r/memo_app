@@ -104,23 +104,8 @@
                     </div>
                 </div>
 
-                <div class="col-sm-12 col-md-4 p-0">
-                    <div class="card">
-                        <div class="card-header">メモ一覧
-                            <a href="{{ route('index') }}" class="text-secondary"><i class="fas fa-plus"></i></a>
-                        </div>
-                        <div class="card-body my-card-body">
-                            {{-- 各ユーザーのメモ一覧表示 --}}
-                            @foreach($memos as $memo)
-                                <a href="/edit/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
+                @yield('content')
 
-                <div class="col-sm-12 col-md-6 p-0">
-                    @yield('content')
-                </div>
             </div>
         </main>
     </div>
