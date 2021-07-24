@@ -9,24 +9,10 @@ crossorigin="anonymous"></script>
 @endsection
 
 @section('content')
-<div class="col-sm-12 col-md-4 p-0">
-    <div class="card">
-        <div class="card-header">他ユーザのメモ一覧
-        </div>
-        <div class="card-body my-card-body">
-        <div class="mb-3 text-right border-bottom">
-         <a href="{{ route('index') }}" class="text-secondary">自分のメモ一覧へ</a>
-            {{-- 全ユーザーのメモ一覧表示 --}}
-            @foreach($other_memos as $memo)
-                <a href="" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
-            @endforeach
-        </div>
-    </div>
-</div>
-<div class="col-sm-12 col-md-6 p-0">
-    <div class="card">
 
-    </div>
-</div>
+        <div class="card-header">メモ内容</div>
+        <div class="card-body my-card-body">
+            閲覧したいメモを選択してください。
+        </div>
 
 @endsection
