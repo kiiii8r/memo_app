@@ -11,6 +11,7 @@ class Memo extends Model
 
     public function getMyMemo(){
         $query_tag = \Request::query('tag');
+        $query_genre = \Request::query('genre');
         $query = Memo::query()->select('memos.*')
             ->where('user_id', '=', \Auth::id())
             ->whereNull('deleted_at')
@@ -22,6 +23,11 @@ class Memo extends Model
                 ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
                 ->where('memo_tags.tag_id', '=', $query_tag)
                 ->get();
+        }else if(!empty($query_genre)){
+            // ジャンルで絞り込み
+            $memos = $query
+            ->where('memos.genre', '=', $query_genre)
+            ->get();
         }else{
             // タグがなければ全て取得
             $memos = $query
