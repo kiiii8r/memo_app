@@ -86,14 +86,14 @@
                         <div class="pl-10 card-body card-body-genre">
                             {{-- 各ユーザーのタグ一覧表示 --}}
                             @if(Request::is('edit/*') || Request::is('/*'))
-                                <form class="card-body my-card-body" action="{{ route('index') }}" method="GET">
+                                <form class="card-body" action="{{ route('index') }}" method="GET">
                             @else
-                                <form class="card-body my-card-body" action="{{ route('search') }}" method="GET">
+                                <form class="card-body" action="{{ route('search') }}" method="GET">
                             @endif
                                 @csrf
                                 <select name="genre">
                                     @foreach(config('genre') as $key => $genre)
-                                    <option value="{{ $key }}">{{ $genre }}</option>
+                                    <option value="{{ $key }}"  {{ (INT) \Request::query('genre') === $key ? 'selected' : '' }} ) >{{ $genre }}</option>
                                     @endforeach
                                 </select>
                                 <div class="d-flex justify-content-end">
@@ -103,7 +103,11 @@
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-header">タグ一覧</div>
+                        <div class="card-header">タグ一覧
+                            @if(Request::is('search/*') || Request::is('read/*'))
+                            <div class="small d-inline">(上位30件)</div>
+                            @endif
+                        </div>
                         <div class="pl-10 card-body card-body-tags">
                             {{-- 各ユーザーのタグ一覧表示 --}}
                             @if(Request::is('edit/*') || Request::is('/*'))
