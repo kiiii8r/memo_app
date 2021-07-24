@@ -15,12 +15,18 @@
 
 .scroll-overflow-create {
     overflow: scroll;
-    max-height: 200px;
+    max-height: 160px;
 }
 
-.scroll-overflow-edit {
+
+.scroll-overflow-tag {
     overflow: scroll;
     height: 80px;
+}
+
+.scroll-overflow-read {
+    overflow: scroll;
+    height: 200px;
 }
 
 .delete {
