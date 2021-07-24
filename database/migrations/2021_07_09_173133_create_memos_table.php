@@ -16,6 +16,9 @@ class CreateMemosTable extends Migration
         Schema::create('memos', function (Blueprint $table) {
             $table->unsignedBigInteger('id', true);
             $table->longText('content');
+            $table->text('url');
+            $table->integer('genre');
+            $table->integer('score');
             $table->unsignedBigInteger('user_id');
             // 論理削除を定義
             $table->softDeletes();
