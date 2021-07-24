@@ -14,6 +14,7 @@ class CreateMemoTagsTable extends Migration
     public function up()
     {
         Schema::create('memo_tags', function (Blueprint $table) {
+            $table->unsignedBigInteger('id', true);
             $table->unsignedBigInteger('memo_id');
             $table->unsignedBigInteger('tag_id');
 
