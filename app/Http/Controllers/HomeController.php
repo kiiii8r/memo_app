@@ -30,7 +30,13 @@ class HomeController extends Controller
     public function index()
     {
 
-        $tags = Tag::where('user_id', '=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+        $tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count'))
+            ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->where('user_id', '=', \Auth::id())
+            ->whereNull('deleted_at')
+            ->orderBy(MemoTag::raw('count(memo_tags.tag_id)'), 'DESC')
+            ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
+            ->get();
 
         return view('create', compact('tags'));
     }
@@ -48,7 +54,9 @@ class HomeController extends Controller
             $memo_id = Memo::insertGetId(['content' => $posts['content'], 'url' => $posts['url'], 'genre' => $posts['genre'], 'score' => $posts['score'],  'user_id' => \Auth::id()]);
 
             // 新規タグがすでにtagsテーブルに存在するのかチェック
-            $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists();
+            $tag_exists = Tag::where('user_id', '=', \Auth::id())
+                ->where('name', '=', $posts['new_tag'])
+                ->exists();
 
             if( !empty($posts['new_tag']) && !$tag_exists){
                 // 新規タグが既に存在しなければ、tagsテーブルにインサート→IDを取得
@@ -82,7 +90,7 @@ class HomeController extends Controller
             ->get();
 
         // url内容を取得
-        $data = htmlspecialchars($edit_memo[0]['url'], ENT_QUOTES);
+        $data = $edit_memo[0]['url'];
         $youtube = $edit_memo[0]['url'];
 
         // フレーム確認
@@ -108,7 +116,13 @@ class HomeController extends Controller
         }
 
         // タグ一覧を取得
-        $tags = Tag::where('user_id', '=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+        $tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count'))
+        ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
+        ->where('user_id', '=', \Auth::id())
+        ->whereNull('deleted_at')
+        ->orderBy(MemoTag::raw('count(memo_tags.tag_id)'), 'DESC')
+        ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
+        ->get();
 
         return view('edit', compact('edit_memo', 'include_tags' ,'tags', 'youtube'));
     }
@@ -118,7 +132,7 @@ class HomeController extends Controller
     {
         // $postがpostされた内容を全て取得
         $posts = $request->all();
-        $request->validate(['content' => 'required|max:255', 'url' => 'required']);
+        $request->validate(['content' => 'required|max:255', 'url' => 'required|url']);
 
         // トランザクションスタート
         DB::transaction(function () use($posts){
@@ -132,11 +146,15 @@ class HomeController extends Controller
                     MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag]);
                 }
             }
-            // もし、新しいタグの入力があれば、インサートして紐付け
-            $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists();
+            // 新しいタグの入力があれば代入
+            $tag_exists = Tag::where('user_id', '=', \Auth::id())
+                ->where('name', '=', $posts['new_tag'])
+                ->whereNull('tags.deleted_at')
+                ->exists();
 
+            // 新規タグが既に存在しなければ、tagsテーブルにインサート→IDを取得
             if( !empty($posts['new_tag']) && !$tag_exists){
-                // 新規タグが既に存在しなければ、tagsテーブルにインサート→IDを取得
+
                 $tag_id = Tag::insertGetId(['user_id' => \Auth::id(), 'name' => $posts['new_tag']]);
                 // memo_tagsにインサートして、メモとタグを紐付ける
                 MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag_id]);
@@ -156,7 +174,21 @@ class HomeController extends Controller
         $posts = $request->all();
 
         // 指定のMemoレコードをアップデートする
-        Memo::where('id', $posts['memo_id'])->update(['deleted_at' => date("Y-m-d H:i:s", time())]);
+        Memo::where('id', $posts['memo_id'])
+            ->update(['deleted_at' => date("Y-m-d H:i:s", time())]);
+
+        // ホーム画面に戻る
+        return redirect( route('index') );
+    }
+
+    public function tag_destroy(Request $request)
+    {
+        // $postがpostされた内容を全て取得
+        $posts = $request->all();
+
+        // 指定のtagを削除する
+        Tag::where('id', $posts['tag_id'])
+            ->update(['deleted_at' => date("Y-m-d H:i:s", time())]);
 
         // ホーム画面に戻る
         return redirect( route('index') );
@@ -165,13 +197,22 @@ class HomeController extends Controller
 
     public function search()
     {
-        $tags = Tag::where('user_id', '!=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+        $tags = MemoTag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) as count'))
+            ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->where('user_id', '!=', \Auth::id())
+            ->whereNull('deleted_at')
+            ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
+            ->groupBy('memo_tags.tag_id')
+            ->get();
 
         $query_tag = \Request::query('tag');
-        $query = Memo::query()->select('memos.*')
+        $query_genre =  \Request::query('genre');
+        $query = Memo::query()
+            ->select('memos.*')
             ->where('user_id', '!=', \Auth::id())
             ->whereNull('deleted_at')
             ->orderBy('updated_at', 'DESC');
+
         // もしクエリパラメータtagがあれば
         if(!empty($query_tag)) {
             // タグで絞り込み
@@ -179,69 +220,74 @@ class HomeController extends Controller
                 ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
                 ->where('memo_tags.tag_id', '=', $query_tag)
                 ->get();
+        }else if(!empty($query_genre)){
+            $other_memos = $query
+            ->where('memos.genre', '=', $query_genre)
+            ->get();
         }else{
             // タグがなければ全て取得
             $other_memos = $query
                 ->get();
         }
 
-        return view('read', compact('other_memos', 'tags'));
+        return view('search', compact('other_memos', 'tags'));
     }
 
 
     // 他ユーザのメモ一一覧機能
     public function read($id)
     {
-        $tags = Tag::where('user_id', '!=', \Auth::id())->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
 
-        $query_tag = \Request::query('tag');
-        $query = Memo::query()->select('memos.*')
+        $other_memos = Memo::select('memos.*')
             ->where('user_id', '!=', \Auth::id())
             ->whereNull('deleted_at')
-            ->orderBy('updated_at', 'DESC');
-        // もしクエリパラメータtagがあれば
-        if(!empty($query_tag)) {
-            // タグで絞り込み
-            $other_memos = $query
-                ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
-                ->where('memo_tags.tag_id', '=', $query_tag)
-                ->get();
-        }else{
-            // タグがなければ全て取得
-            $other_memos = $query
-                ->get();
-        }
+            ->orderBy('updated_at', 'DESC')
+            ->get();
 
         // メモを一つだけ取得
-        // $other_memo = Memo::select('memos.*', 'tags.id AS tag_id')
-        // ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
-        // ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
-        // ->where('memos.user_id', '=', \Auth::id())
-        // ->where('memos.id', '=', $id)
-        // ->whereNull('memos.deleted_at')
-        // ->get();
+        $other_memo = Memo::select('memos.*', 'tags.id AS tag_id', 'users.name AS user_name')
+            ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+            ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->leftJoin('users', 'memos.user_id', '=', 'users.id')
+            ->where('memos.id', '=', $id)
+            ->whereNull('memos.deleted_at')
+            ->get();
 
+        // 編集するメモとタグを紐付け
+        $include_tags = [];
+        foreach($other_memo as $memo){
+            array_push($include_tags, $memo['tag_id']);
+        }
+
+        $tags = MemoTag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) as count'))
+        ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+        ->where('user_id', '!=', \Auth::id())
+        ->whereNull('deleted_at')
+        ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
+        ->groupBy('memo_tags.tag_id')
+        ->limit(30)
+        ->get();
 
         // url内容を取得
-        // $data = htmlspecialchars($other_memos[0]['url'], ENT_QUOTES);
-        // $youtube = $other_memos[0]['url'];
+        $data = $other_memos[0]['url'];
+        $youtube = $other_memo[0]['url'];
 
         // // フレーム確認
-        // if (strpos($youtube, "iframe") != true)
-        // {
-        //     // URL確認
-        //     if (strpos($youtube, "watch") != false)
-        //     {
-        //         // コード変換
-        //         $youtube = substr($youtube, (strpos($youtube, "=")+1));
-        //     }
-        //     else
-        //     {
-        //         // 短縮URL変換
-        //         $youtube = substr($youtube, (strpos($youtube, "youtu.be/")+9));
-        //     }
-        // }
+        if (strpos($youtube, "iframe") != true)
+        {
+            // URL確認
+            if (strpos($youtube, "watch") != false)
+            {
+                // コード変換
+                $youtube = substr($youtube, (strpos($youtube, "=")+1));
+            }
+            else
+            {
+                // 短縮URL変換
+                $youtube = substr($youtube, (strpos($youtube, "youtu.be/")+9));
+            }
+        }
 
-        return view('read', compact('other_memos', 'tags'));
+        return view('read', compact('other_memos', 'tags', 'youtube', 'other_memo', 'include_tags'));
     }
 }
