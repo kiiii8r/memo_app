@@ -85,27 +85,96 @@
                         <div class="card-header">ジャンル選択</div>
                         <div class="pl-10 card-body card-body-genre">
                             {{-- 各ユーザーのタグ一覧表示 --}}
-                            <select name="genre">
-                                @foreach(config('genre') as $key => $genre)
-                                <option value="{{ $key }}">{{ $genre }}</option>
-                                @endforeach
-                            </select>
+                            @if(Request::is('edit/*') || Request::is('/*'))
+                                <form class="card-body my-card-body" action="{{ route('index') }}" method="GET">
+                            @else
+                                <form class="card-body my-card-body" action="{{ route('search') }}" method="GET">
+                            @endif
+                                @csrf
+                                <select name="genre">
+                                    @foreach(config('genre') as $key => $genre)
+                                    <option value="{{ $key }}">{{ $genre }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="mt-4 btn btn-primary">検索</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header">タグ一覧</div>
                         <div class="pl-10 card-body card-body-tags">
                             {{-- 各ユーザーのタグ一覧表示 --}}
-                            <a href="/" class="mb-2 card-text d-block">すべて表示</a>
+                            @if(Request::is('edit/*') || Request::is('/*'))
+                                <a href="/" class="mb-2 card-text d-block">すべて表示</a>
+                            @else
+                                <a href="/search" class="mb-2 card-text d-block">すべて表示</a>
+                            @endif
+
+
                             @foreach($tags as $tag)
-                            <a href="/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">{{ $tag['name'] }}</a>
+                                @if(Request::is('edit/*') || Request::is('/*'))
+                                <a href="/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">
+                                    {{ $tag['name'] }}
+                                    ({{ $tag['count']}})
+
+                                    {{-- タグに紐付くメモ数が0の場合タグを削除できる --}}
+                                    @if($tag['count'] === 0)
+                                    <form class="d-inline" id="delete-form" action="{{ route('tag_destroy') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="tag_id" value="{{ $tag['id'] }}" />
+                                        <button class="ml-2 text- btn btn-outline-danger btn-sm" type="submit" id="delete">削除</button>
+                                    </form>
+                                    @endif
+                                </a>
+                            @else
+                                <a href="/search/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">{{ $tag['name'] }} ({{ $tag['count'] }})</a>
+                            @endif
+
                             @endforeach
                         </div>
                     </div>
                 </div>
 
+                <div class="col-sm-12 col-md-4 p-0">
+                    <div class="card">
+                        @if(Request::is('edit/*') || Request::is('/*'))
+                            <div class="card-header">メモ一覧
+                                <a href="{{ route('index') }}" class="text-secondary"><i class="fas fa-plus"></i></a>
+                            </div>
+                            <div class="card-body my-card-body">
+                                <div class="mb-3 text-right border-bottom">
+                                    <a href="{{ route('search') }}" class="text-secondary">他ユーザーのメモ一覧へ</a>
+                                </div>
+                                {{-- 各ユーザーのメモ一覧表示 --}}
+                                @foreach($memos as $memo)
+                                    <a href="/edit/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="card-header">他ユーザのメモ一覧
+                            </div>
+                            <div class="card-body my-card-body">
+                                <div class="mb-3 text-right border-bottom">
+                                <a href="{{ route('index') }}" class="text-secondary">自分のメモ一覧へ</a>
+                                </div>
+                                {{-- 全ユーザーのメモ一覧表示 --}}
+                                @foreach($other_memos as $memo)
+                                    <a href="/read/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-md-6 p-0">
+                    <div class="card">
+
                 @yield('content')
 
+                    </div>
+                </div>
             </div>
         </main>
     </div>
