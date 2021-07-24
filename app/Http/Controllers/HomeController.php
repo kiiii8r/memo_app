@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Memo;
 use App\Models\Tag;
 use App\Models\MemoTag;
@@ -290,4 +291,5 @@ class HomeController extends Controller
 
         return view('read', compact('other_memos', 'tags', 'youtube', 'other_memo', 'include_tags'));
     }
+
 }
