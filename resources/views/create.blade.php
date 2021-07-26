@@ -14,7 +14,7 @@ crossorigin="anonymous"></script>
 <form class="card-body my-card-body" action="{{ route('store') }}" method="POST">
     @csrf
     <div class="mb-3">
-        <textarea class="form-control" name="content" rows="8" maxlength="255" placeholder="ここにメモを入力"></textarea>
+        <textarea class="form-control" name="content" rows="8" maxlength="500" placeholder="ここにメモを入力"></textarea>
     </div>
     @error('content')
         <div class="alert alert-danger">メモ内容を入力してください</div>
@@ -44,8 +44,18 @@ crossorigin="anonymous"></script>
         </div>
     </div>
     <div class="scroll-overflow-create">
-        @foreach($tags as $tag)
+        上位のタグ：
+        @foreach($all_tags as $tag)
         <div class="form-check form-check-inline mb-3">
+            <input class="form-check-input" type="checkbox" name="tags[]" id="{{ $tag['id'] }}" value="{{ $tag['id'] }}">
+            <label class="form-check-label" for="{{ $tag['id'] }}">{{ $tag['name'] }}</label>
+        </div>
+        @endforeach
+    </div>
+    <div class="scroll-overflow-tag">
+        マイタグ：
+        @foreach($tags as $tag)
+        <div class="form-check form-check-inline mb-2">
             <input class="form-check-input" type="checkbox" name="tags[]" id="{{ $tag['id'] }}" value="{{ $tag['id'] }}">
             <label class="form-check-label" for="{{ $tag['id'] }}">{{ $tag['name'] }}</label>
         </div>
