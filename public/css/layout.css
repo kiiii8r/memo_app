@@ -18,9 +18,14 @@
     max-height: 160px;
 }
 
+.scroll-overflow-info {
+    overflow: scroll;
+    height: 160px;
+}
+
 .scroll-overflow-tag {
     overflow: scroll;
-    height: 80px;
+    height: 60px;
 }
 
 .scroll-overflow-read {
@@ -42,6 +47,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.image-space {
+    height: 300px;
+    width: 300px;
+    background-color: whitesmoke;
+    margin: auto;
+}
+
+.icon {
+    font-size: 34px;
+    padding-bottom: 0px;
 }
 
 @media screen and (max-width:760px) {
