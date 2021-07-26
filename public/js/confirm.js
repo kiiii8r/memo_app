@@ -7,4 +7,22 @@ $(function() {
             return false;
         }
     });
+
+    $('#image-confirm').click(function() {
+        if(confirm('プロフィール画像を変更してもよろしいですか？')) {
+            return true;
+        }else{
+            alert('キャンセルしました');
+            return false;
+        }
+    });
+
+    $('#profile-confirm').click(function() {
+        if(confirm('プロフィールを更新してもよろしいですか？')) {
+            return true;
+        }else{
+            alert('キャンセルしました');
+            return false;
+        }
+    });
 });
