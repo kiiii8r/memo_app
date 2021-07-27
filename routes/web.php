@@ -19,7 +19,9 @@ use App\Http\Controllers\UserController;
 Auth::routes();
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
+Route::get('/complete', [UserController::class, 'complete'])->name('complete');
 Route::post('/store', [HomeController::class, 'store'])->name('store');
+Route::get('/content/{id}', [HomeController::class, 'content'])->name('content');
 Route::get('/edit/{id}', [HomeController::class, 'edit'])->name('edit');
 Route::post('/update', [HomeController::class, 'update'])->name('update');
 Route::post('/destroy', [HomeController::class, 'destroy'])->name('destroy');
@@ -29,3 +31,4 @@ Route::get('/read/{id}', [HomeController::class, 'read'])->name('read');
 Route::get('/mypage', [UserController::class, 'mypage'])->name('mypage');
 Route::get('/user/{id}', [UserController::class, 'user'])->name('user');
 Route::post('/user_update', [UserController::class, 'user_update'])->name('user_update');
+Route::post('/image_up', [UserController::class, 'image_up'])->name('image_up');
