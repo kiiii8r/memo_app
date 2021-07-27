@@ -13,24 +13,32 @@
     overflow: scroll;
 }
 
-.scroll-overflow-create {
+.scroll {
     overflow: scroll;
-    max-height: 160px;
 }
 
-.scroll-overflow-info {
-    overflow: scroll;
-    height: 160px;
-}
-
-.scroll-overflow-tag {
-    overflow: scroll;
+.h-60px {
     height: 60px;
 }
 
-.scroll-overflow-read {
-    overflow: scroll;
-    height: 200px;
+.h-80px {
+    height: 80px;
+}
+
+.h-100px {
+    height: 100px;
+}
+
+.h-160px {
+    height: 160px;
+}
+
+.h-220px {
+    height: 220px;
+}
+
+.h-220px {
+    height: 220px;
 }
 
 .delete {
