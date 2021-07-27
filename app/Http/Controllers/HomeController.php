@@ -27,32 +27,40 @@ class HomeController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
 
+
     // メモ一覧取得
     public function index()
     {
+
+
+
+
         $tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count') )
             ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
             ->leftJoin('memos', 'memos.id', '=', 'memo_tags.memo_id')
             ->where('memos.user_id', '=', \Auth::id())
             ->orWhere('tags.user_id', '=', \Auth::id())
-            
+            ->where('memos.user_id', '=', \Auth::id())
             ->whereNull('tags.deleted_at')
             ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
 
+        // 編集するメモとタグを紐付け
+        $include_tags = [];
+        foreach($tags as $tag){
+            array_push($include_tags, $tag['id']);
+        }
+
         $all_tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count') )
             ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
-            ->leftJoin('memos', 'memos.id', '=', 'memo_tags.memo_id')
-            ->where('memos.user_id', '!=', \Auth::id())
-            ->where('tags.user_id', '!=', \Auth::id())
             ->whereNull('tags.deleted_at')
             ->limit(30)
             ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
 
-        return view('create', compact('tags', 'all_tags'));
+        return view('create', compact('tags', 'all_tags', 'include_tags'));
     }
 
     // 新規メモ作成
@@ -103,21 +111,20 @@ class HomeController extends Controller
         return redirect( route('index') );
     }
 
-    // メモ編集
-    public function edit($id)
+    public function content($id)
     {
-        // メモを一つだけ取得
-        $edit_memo = Memo::select('memos.*', 'tags.id AS tag_id')
-            ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
-            ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
-            ->where('memos.user_id', '=', \Auth::id())
-            ->where('memos.id', '=', $id)
-            ->whereNull('memos.deleted_at')
-            ->get();
+         // メモを一つだけ取得
+         $memo = Memo::select('memos.*', 'tags.id AS tag_id')
+         ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+         ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+         ->where('memos.user_id', '=', \Auth::id())
+         ->where('memos.id', '=', $id)
+         ->whereNull('memos.deleted_at')
+         ->get();
 
         // url内容を取得
-        $data = $edit_memo[0]['url'];
-        $youtube = $edit_memo[0]['url'];
+        $data = $memo[0]['url'];
+        $youtube = $memo[0]['url'];
 
         // フレーム確認
         if (strpos($youtube, "iframe") != true)
@@ -135,11 +142,36 @@ class HomeController extends Controller
             }
         }
 
-        // 編集するメモとタグを紐付け
+        // タグ一覧を取得
+        $tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count') )
+            ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->leftJoin('memos', 'memos.id', '=', 'memo_tags.memo_id')
+            ->where('memos.user_id', '=', \Auth::id())
+            ->orWhere('tags.user_id', '=', \Auth::id())
+            ->whereNull('tags.deleted_at')
+            ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
+            ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
+            ->get();
+
         $include_tags = [];
-        foreach($edit_memo as $memo){
-            array_push($include_tags, $memo['tag_id']);
+            foreach($memo as $tag){
+        array_push($include_tags, $tag['tag_id']);
         }
+
+        return view('content', compact('memo', 'youtube', 'tags', 'include_tags'));
+    }
+
+    // メモ編集
+    public function edit($id)
+    {
+        // メモを一つだけ取得
+        $edit_memo = Memo::select('memos.*', 'tags.id AS tag_id')
+            ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+            ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->where('memos.user_id', '=', \Auth::id())
+            ->where('memos.id', '=', $id)
+            ->whereNull('memos.deleted_at')
+            ->get();
 
         // タグ一覧を取得
         $tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count') )
@@ -148,22 +180,31 @@ class HomeController extends Controller
             ->where('memos.user_id', '=', \Auth::id())
             ->orWhere('tags.user_id', '=', \Auth::id())
             ->whereNull('tags.deleted_at')
-            ->orderBy(MemoTag::raw('count(memo_tags.tag_id)'), 'DESC')
+            ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
+
+        // 編集するメモとタグを紐付け
+        $include_tags = [];
+        $my_tags = [];
+        foreach($edit_memo as $memo){
+            array_push($include_tags, $memo['tag_id']);
+            array_push($my_tags, $memo['tag_id']);
+        }
+        foreach($tags as $tag){
+            array_push($include_tags, $tag['id']);
+        }
+
 
         $all_tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count') )
             ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
-            ->leftJoin('memos', 'memos.id', '=', 'memo_tags.memo_id')
-            ->where('memos.user_id', '!=', \Auth::id())
-            ->where('tags.user_id', '!=', \Auth::id())
             ->whereNull('tags.deleted_at')
             ->limit(30)
-            ->orderBy(MemoTag::raw('count(memo_tags.tag_id)'), 'DESC')
+            ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
 
-        return view('edit', compact('edit_memo', 'include_tags' ,'tags',  'youtube', 'all_tags'));
+        return view('edit', compact('edit_memo', 'include_tags', 'my_tags' ,'tags',  'all_tags'));
     }
 
     // メモ更新
@@ -213,7 +254,7 @@ class HomeController extends Controller
 
 
         // ホーム画面に戻る
-        return redirect('/edit/'. $posts['memo_id']);
+        return redirect('/content/'. $posts['memo_id']);
     }
 
     // メモ削除機能
