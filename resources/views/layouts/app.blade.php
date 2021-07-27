@@ -87,7 +87,7 @@
                         <div class="card-header">ジャンル選択</div>
                         <div class="pl-10 card-body card-body-genre">
                             {{-- 各ユーザーのタグ一覧表示 --}}
-                            @if(Request::is('edit/*') || Request::is('/*'))
+                            @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
                                 <form class="card-body" action="{{ route('index') }}" method="GET">
                             @else
                                 <form class="card-body" action="{{ route('search') }}" method="GET">
@@ -112,18 +112,17 @@
                         </div>
                         <div class="pl-10 card-body card-body-tags">
                             {{-- 各ユーザーのタグ一覧表示 --}}
-                            @if(Request::is('edit/*') || Request::is('/*'))
+                            @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
                                 <a href="/" class="mb-2 card-text d-block">すべて表示</a>
                             @else
                                 <a href="/search" class="mb-2 card-text d-block">すべて表示</a>
                             @endif
 
-
                             @foreach($tags as $tag)
-                                @if(Request::is('edit/*') || Request::is('/*'))
+                                @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
                                 <a href="/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">
                                     {{ $tag['name'] }}
-                                    ({{ $tag['count']}})
+                                    ({{ $tag['count'] }})
 
                                     {{-- タグに紐付くメモ数が0の場合タグを削除できる --}}
                                     @if($tag['count'] === 0)
@@ -134,9 +133,9 @@
                                     </form>
                                     @endif
                                 </a>
-                            @else
-                                <a href="/search/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">{{ $tag['name'] }} ({{ $tag['count'] }})</a>
-                            @endif
+                                @else
+                                    <a href="/search/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">{{ $tag['name'] }} ({{ $tag['count'] }})</a>
+                                @endif
 
                             @endforeach
                         </div>
@@ -145,7 +144,7 @@
 
                 <div class="col-sm-12 col-md-4 p-0">
                     <div class="card">
-                        @if(Request::is('edit/*') || Request::is('/*'))
+                        @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
                             <div class="card-header">メモ一覧
                                 <a href="{{ route('index') }}" class="text-secondary"><i class="fas fa-plus"></i></a>
                             </div>
@@ -155,15 +154,24 @@
                                 </div>
                                 {{-- 各ユーザーのメモ一覧表示 --}}
                                 @foreach($memos as $memo)
-                                    <a href="/edit/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
+                                    <a href="/content/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
                                 @endforeach
                             </div>
                         @else
+                            @if(Request::is('user/*'))
+                            <div class="card-header">{{ $user[0]['name'] }}のメモ一覧
+                            </div>
+                            @else
                             <div class="card-header">他ユーザのメモ一覧
                             </div>
+                            @endif
                             <div class="card-body my-card-body">
                                 <div class="mb-3 text-right border-bottom">
                                 <a href="{{ route('index') }}" class="text-secondary">自分のメモ一覧へ</a>
+                                @if(Request::is('user/*'))
+                                <div class="d-inline ml-2 text-secondary">/</div>
+                                <a href="{{ route('search') }}" class="text-secondary ml-2">他ユーザーのメモ一覧へ</a>
+                                @endif
                                 </div>
                                 {{-- 全ユーザーのメモ一覧表示 --}}
                                 @foreach($other_memos as $memo)
