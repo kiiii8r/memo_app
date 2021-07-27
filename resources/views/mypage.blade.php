@@ -11,7 +11,9 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
-    @yield('javascript')
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous"></script>
+    <script src="/js/confirm.js"></script>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -61,6 +63,9 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{{ route('index') }}">
+                                        メモ一覧へ
+                                    </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
@@ -85,35 +90,34 @@
                         <div class="card-header">マイページ</div>
                         <div class="card-body my-card-body">
                             <div class="mb-2 d-flex justify-content-center">
-                                <img src="{{ asset('storage/profiles/'.$user->profile_image) }}" alt="プロフィール画像">
-                                <form method="post" action="{{ route('user.update', ['user' => $user->id]) }}" enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PATCH')
 
-                                    <label for="profile_image">プロフィール画像</label>
+                                <form action="{{ route('image_up') }}" method="POST" enctype="multipart/form-data">
+                                      @csrf
 
-                                    <label for="profile_image" class="btn">
-                                      <img src="{{ asset('storage/profiles/'.$user->profile_image) }}" id="img">
-                                      <input id="profile_image" type="file"  name="profile_image" onchange="previewImage(this);">
-                                    </label>
+                                    <div class="text-center image-space">
+                                        @if(isset($user[0]['image']))
+                                            <img class="rounded" src="{{ asset('storage/' . $user[0]['image']) }}" alt="画像なし" width="300" height="300">
+                                        @else
+                                            <div class="h-100 d-flex align-items-center justify-content-center">画像なし</div>
+                                        @endif
+                                    </div>
 
-                                    <button type="submit" class="btn btn-primary">
-                                      変更
-                                    </button>
-                                  </form>
+                                    <h2 class="m-3 text-center">{{$user[0]['name']}}のプロフィール</h2>
 
-                                  <script>
-                                    function previewImage(obj)
-                                    {
-                                      var fileReader = new FileReader();
-                                      fileReader.onload = (function() {
-                                        document.getElementById('img').src = fileReader.result;
-                                      });
-                                      fileReader.readAsDataURL(obj.files[0]);
-                                    }
-                                  </script>
+                                    @error('file')
+                                    <div class="alert alert-danger">画像を選択してください。</div>
+                                    @enderror
 
-                        </div>
+                                    <label for="photo"></label>
+                                    <input type="file" class="m-3 p-2 border" name="file">
+
+                                    <div class="m-2 d-flex justify-content-center">
+                                    <button id="image-confirm" type="submit" class="btn btn-primary">プロフィール画像更新</button>
+                                    </div>
+
+                                </form>
+
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -123,11 +127,11 @@
                         <div class="card-header">情報</div>
                         <div class="card-body my-card-body">
                             <div class="mb-2 ml-4 d-flex justify-content-start">
-                                <form id="delete-form" class="w-75 d-left" action="{{ route('user_update') }}" method="POST">
+                                <form class="w-75 d-left" action="{{ route('user_update') }}" method="POST">
                                         @csrf
                                     <div class="form-group">
                                         <label for="exampleFormControlInput1">自己紹介</label>
-                                        <textarea class="form-control" name="intro" rows="3" maxlength="255" placeholder="自己紹介を入力">{{ $user[0]['intro'] }}</textarea>
+                                        <textarea class="form-control" name="info" rows="3" maxlength="500" placeholder="自己紹介を入力">{{ $user[0]['info'] }}</textarea>
                                     </div>
                                     <div class="form-group">
                                         <label for="exampleFormControlInput1">メールアドレス</label>
@@ -138,27 +142,27 @@
                                     @enderror
                                     <div class="form-group">
                                         <label for="exampleFormControlInput1">Twitter URL</label>
-                                        <input type="text" name="twitter" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" value="{{ $user[0]['twitter'] }}">
+                                        <input type="text" name="twitter" class="form-control" id="exampleFormControlInput1" placeholder="https://twitter.com/.." value="{{ $user[0]['twitter'] }}">
                                     </div>
                                     @error('twitter')
                                     <div class="alert alert-danger">TwitterのURLを入力してください。</div>
                                     @enderror
                                     <div class="form-group">
                                         <label for="exampleFormControlInput1">GitHub URL</label>
-                                        <input type="text" name="github" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" value="{{ $user[0]['github'] }}">
+                                        <input type="text" name="github" class="form-control" id="exampleFormControlInput1" placeholder="https://github.com/.." value="{{ $user[0]['github'] }}">
                                     </div>
                                     @error('github')
                                     <div class="alert alert-danger">githubのURLを入力してください。</div>
                                     @enderror
                                     <div class="form-group">
                                         <label for="exampleFormControlInput1">Qiita URL</label>
-                                        <input type="text" name="qiita" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" value="{{ $user[0]['qiita'] }}">
+                                        <input type="text" name="qiita" class="form-control" id="exampleFormControlInput1" placeholder="https://qiita.com/.." value="{{ $user[0]['qiita'] }}">
                                     </div>
                                     @error('qiita')
                                     <div class="alert alert-danger">qiitaのURLを入力してください。</div>
                                     @enderror
                                     <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary">更新</button>
+                                        <button id="profile-confirm" type="submit" class="btn btn-primary">更新</button>
                                     </div>
                                 </form>
                             </div>
