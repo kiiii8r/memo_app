@@ -8,6 +8,7 @@ use App\Models\Memo;
 use App\Models\Tag;
 use App\Models\MemoTag;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -32,9 +33,6 @@ class HomeController extends Controller
     public function index()
     {
 
-
-
-
         $tags = Tag::select('tags.id', 'tags.name', Tag::raw('count(memo_tags.tag_id) count') )
             ->leftJoin('memo_tags', 'memo_tags.tag_id', '=', 'tags.id')
             ->leftJoin('memos', 'memos.id', '=', 'memo_tags.memo_id')
@@ -45,6 +43,19 @@ class HomeController extends Controller
             ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
+
+        $no_tags = DB::select("SELECT t.id, t.name, COUNT(mt.tag_id) count
+        FROM tags t
+        LEFT JOIN memo_tags mt
+        ON mt.tag_id = t.id
+        LEFT JOIN memos m
+        ON m.id = mt.memo_id
+        WHERE m.user_id = ".Auth::id()."
+        OR t.user_id = ".Auth::id()."
+        AND t.deleted_at IS NULL
+        GROUP BY t.id
+        HAVING COUNT(mt.tag_id) = 0
+        " );
 
         // 編集するメモとタグを紐付け
         $include_tags = [];
@@ -60,7 +71,7 @@ class HomeController extends Controller
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
 
-        return view('create', compact('tags', 'all_tags', 'include_tags'));
+        return view('create', compact('tags', 'no_tags', 'all_tags', 'include_tags'));
     }
 
     // 新規メモ作成
@@ -148,17 +159,31 @@ class HomeController extends Controller
             ->leftJoin('memos', 'memos.id', '=', 'memo_tags.memo_id')
             ->where('memos.user_id', '=', \Auth::id())
             ->orWhere('tags.user_id', '=', \Auth::id())
+            ->where('memos.user_id', '=', \Auth::id())
             ->whereNull('tags.deleted_at')
             ->orderBy(Tag::raw('count(memo_tags.tag_id)'), 'DESC')
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
+
+        $no_tags = DB::select("SELECT t.id, t.name, COUNT(mt.tag_id) count
+            FROM tags t
+            LEFT JOIN memo_tags mt
+            ON mt.tag_id = t.id
+            LEFT JOIN memos m
+            ON m.id = mt.memo_id
+            WHERE m.user_id = ".Auth::id()."
+            OR t.user_id = ".Auth::id()."
+            AND t.deleted_at IS NULL
+            GROUP BY t.id
+            HAVING COUNT(mt.tag_id) = 0
+            " );
 
         $include_tags = [];
             foreach($memo as $tag){
         array_push($include_tags, $tag['tag_id']);
         }
 
-        return view('content', compact('memo', 'youtube', 'tags', 'include_tags'));
+        return view('content', compact('memo', 'youtube', 'tags', 'no_tags', 'include_tags'));
     }
 
     // メモ編集
@@ -184,6 +209,19 @@ class HomeController extends Controller
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
 
+            $no_tags = DB::select("SELECT t.id, t.name, COUNT(mt.tag_id) count
+            FROM tags t
+            LEFT JOIN memo_tags mt
+            ON mt.tag_id = t.id
+            LEFT JOIN memos m
+            ON m.id = mt.memo_id
+            WHERE m.user_id = ".Auth::id()."
+            OR t.user_id = ".Auth::id()."
+            AND t.deleted_at IS NULL
+            GROUP BY t.id
+            HAVING COUNT(mt.tag_id) = 0
+            " );
+
         // 編集するメモとタグを紐付け
         $include_tags = [];
         $my_tags = [];
@@ -204,7 +242,7 @@ class HomeController extends Controller
             ->groupBy('tags.id', 'tags.name', 'memo_tags.tag_id')
             ->get();
 
-        return view('edit', compact('edit_memo', 'include_tags', 'my_tags' ,'tags',  'all_tags'));
+        return view('edit', compact('edit_memo', 'include_tags', 'my_tags' ,'tags', 'no_tags', 'all_tags'));
     }
 
     // メモ更新
@@ -303,11 +341,22 @@ class HomeController extends Controller
 
         $query_tag = \Request::query('tag');
         $query_genre =  \Request::query('genre');
+        $query_name =  \Request::query('user_name');
         $query = Memo::query()
             ->select('memos.*')
             ->where('user_id', '!=', \Auth::id())
             ->whereNull('deleted_at')
             ->orderBy('updated_at', 'DESC');
+// dd( $query_name );
+        // もしクエリパラメータnameがあれば
+        if(!empty($query_name)) {
+            $other_memos = $query
+            ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+            ->leftJoin('users', 'users.id', '=', 'memos.user_id')
+            ->where('users.name', 'like', "%$query_name%")
+            ->groupBy('memos.id')
+            ->get();
+        }
 
         // もしクエリパラメータtagがあれば
         if(!empty($query_tag)) {

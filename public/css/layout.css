@@ -1,16 +1,18 @@
+.none {
+    display: none;
+}
+
 .my-card-body {
     height: calc(100vh - (55px + 48px));
     overflow: scroll;
 }
 
-.card-body-genre {
-    height: calc(35vh - (55px + 48px));
-    overflow: scroll;
+.search-box {
+    height: calc(55vh - (55px + 48px));
 }
 
-.card-body-tags {
-    height: calc(72vh - (55px + 48px));
-    overflow: scroll;
+.tags-box {
+    height: calc(52vh - (55px + 48px));
 }
 
 .scroll {

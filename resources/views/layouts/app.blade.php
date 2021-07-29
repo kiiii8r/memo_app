@@ -84,60 +84,78 @@
             <div class="row">
                 <div class="col-sm-12 col-md-2 p-0">
                     <div class="card">
-                        <div class="card-header">ジャンル選択</div>
-                        <div class="pl-10 card-body card-body-genre">
-                            {{-- 各ユーザーのタグ一覧表示 --}}
+                        <div class="card-header">絞り込み検索</div>
+                        <div class="pl-10 card-body p-0 ml-3 search-box scroll">
                             @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
                                 <form class="card-body" action="{{ route('index') }}" method="GET">
                             @else
                                 <form class="card-body" action="{{ route('search') }}" method="GET">
+                                <input type="text" class="mt-2 mb-2" name="user_name" placeholder="ユーザー名検索" value=""/>
                             @endif
                                 @csrf
+                                <div class="mt-2">ジャンル選択</div>
                                 <select name="genre">
+
                                     @foreach(config('genre') as $key => $genre)
-                                    <option value="{{ $key }}"  {{ (INT) \Request::query('genre') === $key ? 'selected' : '' }} ) >{{ $genre }}</option>
+                                        <option value="{{ $key }}"  {{ (INT) \Request::query('genre') === $key ? 'selected' : '' }} ) >{{ $genre }}</option>
                                     @endforeach
                                 </select>
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="mt-4 btn btn-primary">検索</button>
+                                    <button type="submit" class="mt-3 btn btn-primary">検索</button>
                                 </div>
                             </form>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header">タグ一覧
-                            @if(Request::is('search/*') || Request::is('read/*'))
-                            <div class="small d-inline">(上位30件)</div>
+                            @if(Request::is('search/*') || Request::is('search') || Request::is('read/*'))
+                                <div class="small d-inline">(上位30件)</div>
                             @endif
+
+                            @if(\Request::query('tag'))
+                                @if(Request::is('search'))
+                                    <a href="/search" class="mb-2 ml-1 card-text d-inline text-secondary"><i class="fas fa-undo-alt"></i></a>
+                                @else
+                                    <a href="/" class="mb-2 ml-1 card-text d-inline text-secondary"><i class="fas fa-undo-alt"></i></a>
+                                @endif
+                            @endif
+
                         </div>
-                        <div class="pl-10 card-body card-body-tags">
-                            {{-- 各ユーザーのタグ一覧表示 --}}
-                            @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
-                                <a href="/" class="mb-2 card-text d-block">すべて表示</a>
-                            @else
-                                <a href="/search" class="mb-2 card-text d-block">すべて表示</a>
-                            @endif
+                        <div class="pl-10 card-body scroll tags-box">
 
                             @foreach($tags as $tag)
                                 @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
-                                <a href="/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">
+                                <a href="/?tag={{ $tag['id'] }}" class="card-text btn-sm btn btn-outline-secondary mb-2">
                                     {{ $tag['name'] }}
                                     ({{ $tag['count'] }})
-
-                                    {{-- タグに紐付くメモ数が0の場合タグを削除できる --}}
-                                    @if($tag['count'] === 0)
-                                    <form class="d-inline" id="delete-form" action="{{ route('tag_destroy') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="tag_id" value="{{ $tag['id'] }}" />
-                                        <button class="ml-2 text- btn btn-outline-danger btn-sm" type="submit" id="delete">削除</button>
-                                    </form>
-                                    @endif
                                 </a>
                                 @else
-                                    <a href="/search/?tag={{ $tag['id'] }}" class="card-text d-block mb-2">{{ $tag['name'] }} ({{ $tag['count'] }})</a>
+                                    <a href="/search/?tag={{ $tag['id'] }}" class="card-text btn-sm btn btn-outline-secondary mb-2">{{ $tag['name'] }} ({{ $tag['count'] }})</a>
+                                @endif
+                            @endforeach
+
+
+                            @if(Request::is('edit/*') || Request::is('/*') || Request::is('content/*'))
+
+                                @if(!empty($no_tags))
+                                    <div class="m-1 border-bottom">不要タグの削除</div>
                                 @endif
 
-                            @endforeach
+                                <div class="card-text">
+                                    @foreach($no_tags as $tag)
+                                        <form class="d-inline" id="delete-form" action="{{ route('tag_destroy') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="tag_id" value="{{ $tag->id }}" />
+                                            <button class=" mb-2 btn-sm btn btn-outline-danger" type="submit" id="delete">
+                                                {{ $tag->name }}
+                                                ({{ $tag->count }})
+                                            </button>
+                                        </form>
+                                    @endforeach
+                                </div>
+
+                            @endif
+
                         </div>
                     </div>
                 </div>
