@@ -1,31 +1,46 @@
+.none {
+    display: none;
+}
+
 .my-card-body {
     height: calc(100vh - (55px + 48px));
     overflow: scroll;
 }
 
-.card-body-genre {
-    height: calc(35vh - (55px + 48px));
+.search-box {
+    height: calc(55vh - (55px + 48px));
+}
+
+.tags-box {
+    height: calc(52vh - (55px + 48px));
+}
+
+.scroll {
     overflow: scroll;
 }
 
-.card-body-tags {
-    height: calc(72vh - (55px + 48px));
-    overflow: scroll;
+.h-60px {
+    height: 60px;
 }
 
-.scroll-overflow-create {
-    overflow: scroll;
-    max-height: 160px;
-}
-
-.scroll-overflow-tag {
-    overflow: scroll;
+.h-80px {
     height: 80px;
 }
 
-.scroll-overflow-read {
-    overflow: scroll;
-    height: 200px;
+.h-100px {
+    height: 100px;
+}
+
+.h-160px {
+    height: 160px;
+}
+
+.h-220px {
+    height: 220px;
+}
+
+.h-220px {
+    height: 220px;
 }
 
 .delete {
@@ -42,6 +57,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.image-space {
+    height: 300px;
+    width: 300px;
+    background-color: whitesmoke;
+    margin: auto;
+}
+
+.icon {
+    font-size: 34px;
+    padding-bottom: 0px;
 }
 
 @media screen and (max-width:760px) {
