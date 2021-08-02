@@ -43,6 +43,9 @@
     height: 220px;
 }
 
+.w-30px {
+    min-width: 80px;
+}
 .delete {
     font-size: 14px;
     padding: 0;
