@@ -343,16 +343,16 @@ class HomeController extends Controller
         $query_genre =  \Request::query('genre');
         $query_name =  \Request::query('user_name');
         $query = Memo::query()
-            ->select('memos.*')
+            ->select('memos.*', 'users.name as user_name',)
+            ->leftJoin('users', 'users.id', '=', 'memos.user_id')
             ->where('user_id', '!=', \Auth::id())
             ->whereNull('deleted_at')
             ->orderBy('updated_at', 'DESC');
-// dd( $query_name );
+
         // もしクエリパラメータnameがあれば
         if(!empty($query_name)) {
             $other_memos = $query
             ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
-            ->leftJoin('users', 'users.id', '=', 'memos.user_id')
             ->where('users.name', 'like', "%$query_name%")
             ->groupBy('memos.id')
             ->get();
@@ -383,7 +383,8 @@ class HomeController extends Controller
     public function read($id)
     {
 
-        $other_memos = Memo::select('memos.*')
+        $other_memos = Memo::select('memos.*', 'users.name as user_name',)
+            ->leftJoin('users', 'users.id', '=', 'memos.user_id')
             ->where('user_id', '!=', \Auth::id())
             ->whereNull('deleted_at')
             ->orderBy('updated_at', 'DESC')

@@ -10,7 +10,7 @@ crossorigin="anonymous"></script>
 
 @section('content')
 
-        <div class="card-header">プロファイル</div>
+        <div class="card-header">プロフィール</div>
         <div class="card-body my-card-body">
             <div class="text-center image-space">
                 @if(isset($user[0]['image']))

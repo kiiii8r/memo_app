@@ -108,7 +108,7 @@
                     </div>
                     <div class="card">
                         <div class="card-header">タグ一覧
-                            @if(Request::is('search/*') || Request::is('search') || Request::is('read/*'))
+                            @if(Request::is('search/*') || Request::is('search') || Request::is('read/*') || Request::is('user/*'))
                                 <div class="small d-inline">(上位30件)</div>
                             @endif
 
@@ -193,7 +193,13 @@
                                 </div>
                                 {{-- 全ユーザーのメモ一覧表示 --}}
                                 @foreach($other_memos as $memo)
-                                    <a href="/read/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
+                                    <div class="d-flex">
+                                        <a href="/read/{{ $memo['id'] }}" class="card-text d-block ellipsis mb-2">{{ $memo['content'] }}</a>
+
+                                        @if(Request::is('search/*') || Request::is('search') || Request::is('read/*'))
+                                            ：<a href="/user/{{ $memo['user_id'] }}" class="ellipsis w-30px">{{ $memo['user_name'] }}</a>
+                                        @endif
+                                    </div>
                                 @endforeach
                             </div>
                         @endif
